@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+temp/
+exe_file/
+processing_modules_cookies/
