@@ -5,6 +5,8 @@ from PyQt5 import QtCore
 from xml.dom import minidom 
 from UI.ui_module_a import Ui_widget
 from UI.ui_module_B import Ui_Form
+from PyQt5.QtGui import  QIcon
+from qt_material import apply_stylesheet, QtStyleTools, list_themes
 
 class DataPostProcessing:
     @staticmethod
@@ -74,69 +76,71 @@ class DataPostProcessingModels(DataPostProcessing):
 
     def showDatcnvWindow(self, filePath, model_Name):  
         self.modelWindowDat = Ui_widget() 
-        self.modelWindowDat.ros_file = QCheckBox(self.modelWindowDat.frame_5)
+        self.modelWindowDat.ros_file = QCheckBox(self.modelWindowDat.groupBox)
         self.modelWindowDat.ros_file.setText('Include ros file')
         self.modelWindowDat.horizontalLayout.addWidget(self.modelWindowDat.ros_file)
+        self.dataPostProcessingModuleIntiA(filePath, self.modelWindowDat, model_Name)    
+        self.modelWindowDat.groupBox.setTitle(model_Name)         
         
-
-        self.dataPostProcessingModuleIntiA(filePath, self.modelWindowDat, model_Name)             
         self.modelWindowDat.show()
 
     def showWindowFilterWindow(self, filePath, model_Name):  
         self.modelWindowWindowFilter =  Ui_Form() 
-        self.modelWindowWindowFilter.DP_TitleLB.setText('Window Filter')
+        
         self.dataPostProcessingModuleIntiB(filePath, self.modelWindowWindowFilter, model_Name)  
+        self.modelWindowWindowFilter.groupBox.setTitle(model_Name)
+        
         self.modelWindowWindowFilter.show()
 
     def showBuoyancyWindow(self, filePath, model_Name):  
         self.modelWindowBuoyancy = Ui_Form() 
-        self.modelWindowBuoyancy.DP_TitleLB.setText('Buoyancy')
+        self.modelWindowBuoyancy.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.modelWindowBuoyancy, model_Name)  
         self.modelWindowBuoyancy.show()
         
     def showMarkScanWindow(self, filePath, model_Name):
         self.modelWindowMarkScan =  Ui_widget() 
-        self.modelWindowMarkScan.DP_TitleLB.setText('Mark Scan')
+        self.modelWindowMarkScan.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.modelWindowMarkScan, model_Name)
         self.modelWindowMarkScan.show()
 
     def showFilterWindow(self, filePath, model_Name):   
         self.modelWindowFilter =  Ui_Form() 
-        self.modelWindowFilter.DP_TitleLB.setText('Filter')
+        self.modelWindowFilter.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.modelWindowFilter, model_Name)  
         self.modelWindowFilter.show()
 
         
     def showAlignCTDWindow(self, filePath, model_Name):   
         self.modelWindowAlign =  Ui_Form()     
-        self.modelWindowAlign.DP_TitleLB.setText('Align CTD') 
+        self.modelWindowAlign.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.modelWindowAlign, model_Name)     
         self.modelWindowAlign.show()
 
         
     def showLoopEditWindow(self, filePath, model_Name):   
         self.modelWindowLoopEdit =  Ui_Form()    
-        self.modelWindowLoopEdit.DP_TitleLB.setText('Loop Edit')
+        self.modelWindowLoopEdit.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.modelWindowLoopEdit, model_Name)
         self.modelWindowLoopEdit.show()
 
     def showCellThermalMassWindow(self, filePath, model_Name):
         self.cellThermalMassWindow =  Ui_Form() 
-        self.cellThermalMassWindow.DP_TitleLB.setText('Cell Thermal Mass')
+        self.cellThermalMassWindow.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath,  self.cellThermalMassWindow, model_Name)
         self.cellThermalMassWindow.show()
        
     def showDriveWindow(self, filePath, model_Name):
         print('I am here in dive window')
         self.driveWindow =  Ui_Form() 
-        self.driveWindow.DP_TitleLB.setText('Derive')
+        self.driveWindow.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.driveWindow, model_Name)
         self.driveWindow.show()
 
 
     def showBinAverage(self, filePath, model_Name):
         self.binAverage =  Ui_Form() 
-        self.binAverage.DP_TitleLB.setText('Bin Average')
+        self.binAverage.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.binAverage, model_Name)
         self.binAverage.show()
 
@@ -144,22 +148,27 @@ class DataPostProcessingModels(DataPostProcessing):
     def showBottleSummaryWindow(self, filePath, model_Name):
         self.bottleSummarywindow =  Ui_widget() 
         self.dataPostProcessingModuleIntiA(filePath, self.bottleSummarywindow, model_Name)
+        self.bottleSummarywindow.groupBox.setTitle(model_Name)
         self.bottleSummarywindow.show()
      
 
     def showDeriveTEOS10Window(self, filePath, model_Name):
         self.driveTEOS10window =  Ui_Form() 
-        self.driveTEOS10window.DP_TitleLB.setText('Derive TESO-10')
+        self.driveTEOS10window.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.driveTEOS10window, model_Name)
         self.driveTEOS10window.show()
      
 
     def showWildEditWindow(self, filePath, model_Name):
         self.WildEditwindow =  Ui_Form() 
-        self.WildEditwindow.DP_TitleLB.setText('Wild Edit')
+        self.WildEditwindow.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.WildEditwindow, model_Name)
         self.WildEditwindow.show()
 
+    def set_style_sheet(self, obj, theme):
+        extra = {'density_scale': '0',}
+        apply_stylesheet(obj, theme, invert_secondary=True, extra=extra)
+    
     def dataPostProcessingModuleIntiB(self, filePath, instanceObject, module_name):
         
         instanceObject.DP_SetupFilePB.clicked.connect(lambda: DataPostProcessing.getSystemFilePath(setupFileLE = instanceObject.DP_SetupFileLE, obj = instanceObject))

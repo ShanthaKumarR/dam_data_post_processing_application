@@ -1,35 +1,32 @@
-from UI.ui_main import Ui_MainWindow
+from UI.ui_main import Ui_Form
 from functools import partial
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QDialog, QPushButton, QVBoxLayout
 import sys
 from PyQt5 import QtCore, QtGui
 from qt_material import apply_stylesheet
 import os
+from PyQt5.QtGui import  QIcon
+from qt_material import apply_stylesheet, QtStyleTools, list_themes
 
-class View(QMainWindow):
+color_dict = {'dark_amber':'#ffd740', 'dark_blue':'#448aff', 'dark_cyan':'#4dd0e1', 'dark_lightgreen':'#8bc34a', 'dark_pink': '#ff4081', 'dark_purple':'#ab47bc', 'dark_red':'#ff1744',\
+        'dark_teal':'#1de9b6', 'dark_yellow':'#ffff00', 'light_blue':'#2979ff', 'light_amber':'#ffc400', 'light_blue_500':'#03a9f4','light_cyan':'#00e5ff', 'light_cyan_500':'#00bcd4','light_lightgreen':'#64dd17', \
+        'light_lightgreen_500':'#8bc34a', 'light_orange':'#ff3d00','light_pink':'#ff4081', 'light_pink_500':'#e91e63','light_purple':'#e040fb', 'light_purple_500':'#9c27b0', 'light_red':'#ff1744',\
+        'light_red_500':'#f44336', 'light_teal':'#1de9b6', 'light_teal_500':'#009688', 'light_yellow':'#ffea00'}
+
+class View(QWidget):
     def __init__(self):
         self.app = QApplication(sys.argv)
-        self.my_style = """
-
-        QMainWindow{backgroound: #262D37;}
-        
-        """
-        #self.app.setStyleSheet(self.my_style)
-        QMainWindow.__init__(self)
-        #Ui_MainWindow.__init__(self)
-        self.ui = Ui_MainWindow()
+        QWidget.__init__(self)
+        self.ui = Ui_Form()
         self.ui.setupUi(self)
-        self.ui.header.setStyleSheet('background-color: #448aff')
-        self.ui.header.installEventFilter(self)
+        #self.ui.label.installEventFilter(self)
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
         self.prevGeo = self.geometry()
         self.moved = False
-        extra = {'density_scale': '0',}
+        self.theme = 'dark_blue.xml'
+        self.set_app_style_sheet(header_color = '#448aff', color = self.theme)
+        self.ui.frame.installEventFilter(self)
         
-        apply_stylesheet(self.app, 'dark_blue.xml', invert_secondary=True, extra=extra)
-        stylesheet = self.app.styleSheet()
-        with open('UI\\new_stylesheet.css') as file:
-            self.app.setStyleSheet(stylesheet + file.read().format(**os.environ))
     def ui_controls(self, controller):
         self.ui.DP_DatCnvPB.clicked.connect(lambda: controller.add_standard_item('DatCnvW'))
         self.ui.DP_AlignctdSlBtn.clicked.connect(lambda: controller.add_standard_item('AlignCTDW'))
@@ -56,10 +53,33 @@ class View(QMainWindow):
         self.ui.close_button.clicked.connect(lambda:controller.on_close_run(self.close))
         self.ui.max_button.clicked.connect(self.MaximizeWindow)
         self.ui.min_button.clicked.connect(self.MinimusedWindow)
+        self.ui.settings.clicked.connect(self.theme_option)
+    
+       
+    def start_app(self):
+        self.show()
+        sys.exit(self.app.exec_())
 
+    def MaximizeWindow(self):
+        if self.isMaximized():
+            self.ui.max_button.setIcon(QIcon(u":/images/images/icon_maximize.png"))
+            self.showNormal()
+           
+        else:
+            self.showMaximized()
+            self.ui.max_button.setIcon(QIcon(u":/images/images/icon_restore.png"))
+           
+
+    def normalWindow(self):
+        self.showNormal()
+
+    def MinimusedWindow(self):
+        self.showMinimized()
+        
+    
     def eventFilter(self, obj, event) -> bool:
         
-        if obj == self.ui.header:
+        if obj == self.ui.frame:
             if self.ui.close_button.underMouse():
                     return True
             if self.ui.max_button.underMouse():
@@ -89,22 +109,32 @@ class View(QMainWindow):
                     return True
             
         return True
+
+
+    def theme_option(self):
+        self.theme = QDialog()
+        Vbox_layout = QVBoxLayout(self.theme)
+        Themes = list_themes()
+        self.Theme_buttons = [QPushButton(self.theme) for _ in range(len(Themes))]
+        [btn.setText(name.split('.')[0]) for btn, name in zip(self.Theme_buttons, Themes)]
+        [btn.setObjectName(name.split('.')[0]) for btn, name in zip(self.Theme_buttons, Themes)]
+        self.theme_button_color(self.Theme_buttons)
+        [Vbox_layout.addWidget(btn)   for btn in self.Theme_buttons]
+        [button.clicked.connect(lambda:self.theme_button_clicke_action()) for button in self.Theme_buttons]
+        self.theme.exec_()
+    
+    def theme_button_clicke_action(self):
+        self.theme = self.sender().objectName()+'.xml'
+        self.selected_theme = color_dict[self.theme.split('.')[0]]
+        self.set_app_style_sheet(self.selected_theme, self.theme)
        
-    def start_app(self):
-        self.show()
-        sys.exit(self.app.exec_())
+    def theme_button_color(self, theme_buttons):
+        try:
+            [btn.setStyleSheet("background-color: "+ color_dict[btn.objectName()]) for btn in theme_buttons]
+        except:
+            pass
 
-    def MaximizeWindow(self):
-        if self.isMaximized():
-            self.showNormal()
-           
-        else:
-            self.showMaximized()
-           
-
-    def normalWindow(self):
-        self.showNormal()
-
-    def MinimusedWindow(self):
-        self.showMinimized()
-           
+    def set_app_style_sheet(self, header_color, color):
+        self.ui.label.setStyleSheet('background-color:'+header_color)
+        extra = {'density_scale': '0',}
+        apply_stylesheet(self, color, invert_secondary=True, extra=extra)

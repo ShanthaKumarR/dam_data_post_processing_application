@@ -89,13 +89,6 @@ border-radius: 20px;</string>
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox">
-             <property name="text">
-              <string>ros</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </item>
          <item>
