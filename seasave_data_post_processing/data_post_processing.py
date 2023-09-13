@@ -1,6 +1,6 @@
 import os
 import subprocess
-
+from log import empty_field_alert
 
 from xml.dom import minidom
 
@@ -78,7 +78,7 @@ class Data_post_processing:
 
 
     def set_file_path(self, arg_file_name, module_list:list):
-        for moduleItem, mdName in zip(arg_file_name, module_list):   
+        for moduleItem, mdName in zip(arg_file_name, module_list):  
             with open('processing_modules_cookies'+'/'+moduleItem, 'r', encoding="utf-8") as f:                
                 domObj = minidom.parse(f)
                 rootTag = domObj.getElementsByTagName(mdName)[0].childNodes                              
@@ -86,7 +86,7 @@ class Data_post_processing:
                     if tag.nodeType == minidom.Node.ELEMENT_NODE:            
                         if tag.nodeType == minidom.Node.ELEMENT_NODE:                        
                             tgName = tag.tagName                       
-                            if tgName in 'setupFilePath':
+                            if tgName == 'setupFilePath':
                                 self.setup_file_name = tag.firstChild.nodeValue
                                 
                             elif tgName in 'instrumentconfigPath':
@@ -103,9 +103,10 @@ class Data_post_processing:
 
                             elif tgName in 'inputDirectory':
                                 self.input_directory = tag.firstChild.nodeValue
-
+                            elif tgName in 'outputFileName':
+                                self.output_file_name = tag.firstChild.nodeValue
                                
-            
+            self.save_setup_file(mdName, self.setup_file_name)
 
     def check_input_file_or_dir(self, module_name):
 
@@ -114,7 +115,7 @@ class Data_post_processing:
                 return '  '+'/i'+self.__input_directory+'\\'+ self.__input_file_name
             #return '  '+'/i'+self.__input_directory+'\\'+ self.__input_file_name
 
-        elif os.path.isdir(self.__input_directory+'\\'+self.__input_file_name):
+        elif (os.path.isdir(self.__input_directory)) and (self.input_file_name == 'Nil'):
             if (module_name == 'DatCnvW'):
                 return ' '+'/i'+self.__input_directory+'/*.hex'
             elif (module_name == 'Bottlesum'):
@@ -124,33 +125,29 @@ class Data_post_processing:
             else:
                 return '  '+'/i'+self.__input_directory+'/*.cnv'
         else:
-             return self.__input_file_name
+             return ' /i'+self.__input_directory+ '\\' +self.__input_file_name
             
     
 
 
     def process_data(self, module_list:list, batch_executable):
-        try:
-            with open('files\\'+'arg_file.txt', 'r') as file: 
-                for module, lines in zip(module_list, file):
-                    lines = lines.strip('\n')
-                    print(lines)
-                    secargs = [batch_executable+'//'+module+'.exe', lines]    
-                    p =subprocess.Popen(secargs)              
-                    p.wait()
-        except:
-            pass
+        with open('files\\'+'arg_file.txt', 'r') as file: 
+            for module, lines in zip(module_list, file):
+                lines = lines.strip('\n')
+                secargs = [batch_executable+'//'+module+'.exe', lines]    
+                p =subprocess.Popen(secargs)              
+                p.wait()
+       
 
 
-    def create_batch_argument_file(self, module_list:list, file_name:str = 'files\\arg_file.txt'):
+    def create_batch_argument_file(self, model, file_name:str = 'files\\arg_file.txt'):
         ipArg = list()
-        for model in module_list:
-            ipArg.append('  '+'/p'+self.__setup_file_name)
-            ipArg.append(self.add_config_file(module_name=model))
-            ipArg.append('  '+'/o'+self.__output_directory)
-            ipArg.append('  '+'/a'+self.__name_append)
-            ipArg.append('  ' + '/s')
-            ipArg.append(self.check_input_file_or_dir(module_name=model))  
+        ipArg.append('  '+'/p'+self.__setup_file_name)
+        ipArg.append(self.add_config_file(module_name=model))
+        ipArg.append('  '+'/o'+self.__output_directory)
+        ipArg.append('  '+'/a'+self.__name_append)
+        ipArg.append('  ' + '/s')
+        ipArg.append(self.check_input_file_or_dir(module_name=model))  
 
         with open(file_name, 'a') as f:
                 [f.write(ipa) for ipa in ipArg if (ipa != None)]  
@@ -181,19 +178,29 @@ class Data_post_processing:
             return ''
 
 
-    def save_setup_file(self):
+    def save_setup_file(self, model_name, file_name):
+        
         try:
-            with open(self.__setup_file_name, 'r') as sf:
+            with open(file_name, 'r') as sf:
                 domObj = minidom.parse(sf)
-                domObj.getElementsByTagName('OutputDir')[0].attributes['value'] = self.output_directory
-                domObj.getElementsByTagName('InputDir')[0].attributes['value'] = self.input_directory
-                domObj.getElementsByTagName('InstrumentPath')[0].attributes['value'] = self.instrument_config_file_name 
-                domObj.getElementsByTagName('ArrayItem')[0].attributes['value'] = self.input_file_name 
-                domObj.getElementsByTagName('NameAppend')[0].attributes['value'] = self.name_append
+                if (model_name == 'DatCnvW') or (model_name == 'Bottlesum') or (model_name == 'Markscan'):
+                    domObj.getElementsByTagName('OutputDir')[0].attributes['value'] = self.output_directory
+                    domObj.getElementsByTagName('InputDir')[0].attributes['value'] = self.input_directory
+                    domObj.getElementsByTagName('InstrumentPath')[0].attributes['value'] = self.instrument_config_file_name 
+                    domObj.getElementsByTagName('ArrayItem')[0].attributes['value'] = self.input_file_name 
+                    domObj.getElementsByTagName('NameAppend')[0].attributes['value'] = self.name_append
+                    domObj.getElementsByTagName('OutputFile')[0].attributes['value'] = self.input_file_name
+
+                else:
+                    domObj.getElementsByTagName('OutputDir')[0].attributes['value'] = self.output_directory
+                    domObj.getElementsByTagName('InputDir')[0].attributes['value'] = self.input_directory
+                    domObj.getElementsByTagName('ArrayItem')[0].attributes['value'] = self.input_file_name 
+                    domObj.getElementsByTagName('NameAppend')[0].attributes['value'] = self.name_append
+                    domObj.getElementsByTagName('OutputFile')[0].attributes['value'] = self.input_file_name
 
                 with open(self.__setup_file_name, 'w') as nsf:
                     domObj.writexml(nsf)
+            self.create_batch_argument_file(model_name)
         except TypeError:
             pass
-        except FileNotFoundError:
-            pass
+       

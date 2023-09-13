@@ -1,8 +1,8 @@
 from UI.ui_main import Ui_Form
 from functools import partial
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QDialog, QPushButton, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QDialog, QPushButton, QVBoxLayout
 import sys
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore
 from qt_material import apply_stylesheet
 import os
 from PyQt5.QtGui import  QIcon
@@ -23,10 +23,10 @@ class View(QWidget):
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
         self.prevGeo = self.geometry()
         self.moved = False
-        self.theme = 'dark_blue.xml'
-        self.set_app_style_sheet(header_color = '#448aff', color = self.theme)
+        self.set_app_style_sheet(header_color = '#448aff', color = 'dark_blue.xml')
         self.ui.frame.installEventFilter(self)
-        
+        self.theme = None
+
     def ui_controls(self, controller):
         self.ui.DP_DatCnvPB.clicked.connect(lambda: controller.add_standard_item('DatCnvW'))
         self.ui.DP_AlignctdSlBtn.clicked.connect(lambda: controller.add_standard_item('AlignCTDW'))
@@ -54,7 +54,7 @@ class View(QWidget):
         self.ui.max_button.clicked.connect(self.MaximizeWindow)
         self.ui.min_button.clicked.connect(self.MinimusedWindow)
         self.ui.settings.clicked.connect(self.theme_option)
-    
+        self.ui.close_button.clicked.connect(lambda:controller.on_close())
        
     def start_app(self):
         self.show()
@@ -62,12 +62,18 @@ class View(QWidget):
 
     def MaximizeWindow(self):
         if self.isMaximized():
-            self.ui.max_button.setIcon(QIcon(u":/images/images/icon_maximize.png"))
+            if self.theme == 'light':
+                self.ui.max_button.setIcon(QIcon(u":/images/images/icons/dark_max.png"))
+            else:
+                self.ui.max_button.setIcon(QIcon(u":/images/images/icons/icon_maximize.png"))
             self.showNormal()
            
         else:
             self.showMaximized()
-            self.ui.max_button.setIcon(QIcon(u":/images/images/icon_restore.png"))
+            if self.theme == 'dark':
+                self.ui.max_button.setIcon(QIcon(u":/images/images/icons/dark_restore.png"))
+            else:
+                self.ui.max_button.setIcon(QIcon(u":/images/images/icons/icon_restore.png"))
            
 
     def normalWindow(self):
@@ -113,6 +119,7 @@ class View(QWidget):
 
     def theme_option(self):
         self.theme = QDialog()
+        #self.theme.setWindowFlag(QtCore.Qt.FramelessWindowHint)
         Vbox_layout = QVBoxLayout(self.theme)
         Themes = list_themes()
         self.Theme_buttons = [QPushButton(self.theme) for _ in range(len(Themes))]
@@ -127,6 +134,13 @@ class View(QWidget):
         self.theme = self.sender().objectName()+'.xml'
         self.selected_theme = color_dict[self.theme.split('.')[0]]
         self.set_app_style_sheet(self.selected_theme, self.theme)
+        if 'light' in self.theme:
+            self.set_dark_icons()
+            self.theme = 'light'
+        else:
+            self.light_icons()
+            self.theme = 'dark'
+            
        
     def theme_button_color(self, theme_buttons):
         try:
@@ -138,3 +152,16 @@ class View(QWidget):
         self.ui.label.setStyleSheet('background-color:'+header_color)
         extra = {'density_scale': '0',}
         apply_stylesheet(self, color, invert_secondary=True, extra=extra)
+    
+    def set_dark_icons(self):
+        self.ui.close_button.setIcon(QIcon(u":/images/images/icons/dark_close-16.png"))
+        self.ui.max_button.setIcon(QIcon(u":/images/images/icons/dark_max.png"))
+        self.ui.min_button.setIcon(QIcon(u":/images/images/icons/dark_min.png"))
+        self.ui.settings.setIcon(QIcon(u":/images/images/icons/dark_setting.png"))
+    
+    def light_icons(self):
+        self.ui.close_button.setIcon(QIcon(u":/images/images/icons/icon_close.png"))
+        self.ui.max_button.setIcon(QIcon(u":/images/images/icons/icon_maximize.png"))
+        self.ui.min_button.setIcon(QIcon(u":/images/images/icons/icon_minimize.png"))
+        self.ui.settings.setIcon(QIcon(u":/images/images/icons/icon_settings.png"))
+        

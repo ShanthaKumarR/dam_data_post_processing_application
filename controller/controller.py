@@ -1,19 +1,31 @@
-
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QMessageBox, QDialog, QLineEdit, QPushButton
-
 from seasave_data_post_processing.path_xml import Create_path_xml
 from threading import Thread
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5 import QtCore
 import os
-import shutil
 from xml.dom import minidom
 import json
-from typing import Callable
+import logging
+from log import empty_field_alert
+
+try:
+    if os.path.isdir('log'):
+        pass
+    else:
+        os.mkdir('log')        
+except:
+     pass
 
 
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+file_handler = logging.FileHandler('log\\data_post_processing.log')
+file_handler.setFormatter(formatter)
+LOGGER.addHandler(file_handler)
 
 
 #important note: onle single file or a file full of folder can be converted at once 
@@ -41,7 +53,26 @@ class DataPostProcessingController(QObject):
         self.set_suggestion()
         self.isExeLocationFile_exist()
         self.load_previous_exe_location()
+        self.on_start_run()
+    def on_close(self):
+        try:
+            os.mkdir('model_history')
+            self.save_template('model_history\\pp_temp.json')
+        except FileExistsError:
+            self.save_template('model_history\\pp_temp.json')
 
+    def on_start_run(self):
+        try:
+                with open('model_history\\pp_temp.json', 'r') as model_name:
+                    my_temp_data = json.load(model_name)
+                    #self.model.setRowCount(0)
+                    #self.model.setColumnCount(0)
+                    return self.load_table_for_tepmplate(([my_temp_data[keys]['model_name'] for keys in my_temp_data], [my_temp_data[keys]['parameters'] for keys in my_temp_data]))
+        except:
+            '''template is empty'''
+            self.model.setRowCount(0)
+
+            self.model.setColumnCount(0)
     def moveCurrentRow(self, direction=DOWN):
             if direction not in (self.DOWN, self.UP):
                 return       
@@ -78,14 +109,15 @@ class DataPostProcessingController(QObject):
                 model.removeRow(index.row()) 
                 self.fileName.pop(index.row())
         except IndexError:
-            print('please select single model at once')
+            'please select single model at once'
+            empty_field_alert('please delete single model at a time')
+            LOGGER.info('please delete single model at a time')
 
     
     def on_Click(self):
             index=(self.module_table.selectionModel().currentIndex())
             value=index.sibling(index.row(),index.column()).data() 
             filePath = 'processing_modules_cookies'+'/'+ self.fileName[index.row()] 
-            print('The value is ',  value)
             model_dict = {'AlignCTDW':self.data_post_processing_model_obj.showAlignCTDWindow, 'BinAvgW':self.data_post_processing_model_obj.showBinAverage,\
                  'BuoyancyW':self.data_post_processing_model_obj.showBuoyancyWindow, 'CellTMW':self.data_post_processing_model_obj.showCellThermalMassWindow, \
                      'DeriveW':self.data_post_processing_model_obj.showDriveWindow, 'DeriveTEOS_10W':self.data_post_processing_model_obj.showDeriveTEOS10Window,\
@@ -106,13 +138,21 @@ class DataPostProcessingController(QObject):
                  with open('files\\arg_file.txt', 'w') as line:
                         pass
         except:
-            pass
+            LOGGER.info('Not possible to create file to append batch argument')
         
-        self.data_post_processing_backend_obj.set_file_path(self.fileName, self.get_selected_models())
-        self.data_post_processing_backend_obj.save_setup_file()
-        self.data_post_processing_backend_obj.create_batch_argument_file(self.get_selected_models())
-        process_thread = Thread(target=self.data_post_processing_backend_obj.process_data, args =( self.get_selected_models(), self.DP_SEBbatchLE.text()))
-        process_thread.start()
+        try:
+            self.data_post_processing_backend_obj.set_file_path(self.fileName, self.get_selected_models())
+            self.data_post_processing_thread()
+        except FileNotFoundError:
+            empty_field_alert('file not found')
+
+    def data_post_processing_thread(self):
+        if os.path.isfile(self.DP_SEBbatchLE.text()+'\\SBEBatch.exe'):
+            self.process_thread = Thread(target=self.data_post_processing_backend_obj.process_data, args =( self.get_selected_models(), self.DP_SEBbatchLE.text()), daemon= True)
+            self.process_thread.start()
+        else:
+            empty_field_alert('SBEbatch executable not found in the given location (possibly file renamed or moved or deleted or corrupted)')
+            LOGGER.info('SBEbatch executable not found in the given location (possibly file renamed or moved or deleted or corrupted)')
 
     def getBatchSetupFilePath(self):
         tempSetupFilePath = self.DP_SEBbatchLE.text()
@@ -142,7 +182,6 @@ class DataPostProcessingController(QObject):
                     for tag in model_tag:                       
                         try:                           
                             value = tag.getElementsByTagName(pathTag)[0].childNodes[0].nodeValue     
-                            print(value)
                             parammeters[pathTag] = value                    
                         except:
                             pass
@@ -163,7 +202,7 @@ class DataPostProcessingController(QObject):
         if ret == 0:
             self.getPath()
         elif ret == 1:
-            print('No is clicked') 
+            pass
 
     def getPath(self):       
         self.path = QDialog()
@@ -197,11 +236,11 @@ class DataPostProcessingController(QObject):
             if ret == QMessageBox.Yes:
                 os.remove('temp\\'+template_name+'.json')
                 self.save_template(template_dir+'\\'+template_name+'.json')
-
+                self.path.close()
             elif ret == QMessageBox.No:
-                print('No is clicked') 
+                pass
 
-        self.path.close()
+        
         
     def get_sugesstion(self, File_name):
         for file in os.listdir(File_name):
@@ -242,7 +281,7 @@ class DataPostProcessingController(QObject):
                 self.dpc_template_CB.removeItem(ret)
                 self.dpc_template_CB.setCurrentIndex(0)
             elif ret == 1:
-                print('No is clicked')
+                pass
     
     def add_saved_templates(self, directory = 'temp\\'):
         suggestion = os.listdir(directory)
@@ -261,7 +300,7 @@ class DataPostProcessingController(QObject):
             '''template is empty'''
             self.model.setRowCount(0)
             self.model.setColumnCount(0)
-            print('default module is loading')
+            
 
     
 
@@ -269,14 +308,13 @@ class DataPostProcessingController(QObject):
         self.fileName.clear()
         try:
             for inx, saved_value in enumerate(zip(modules[0], modules[1])):
-                
                 self.add_standard_item(saved_value[0])
                 self.assign_value_from_template_to_module_file(self.fileName[inx], saved_value[1], saved_value[0])
            
         except TypeError:
             self.model.setRowCount(0)
             self.model.setColumnCount(0)
-            print('default is being loaded')
+           
 
     def add_standard_item(self, module_name:str)->None:
         item = QStandardItem(module_name)
@@ -309,7 +347,7 @@ class DataPostProcessingController(QObject):
                 domObj.writexml(f)
                 
         except FileNotFoundError:
-            print('There are no file named dataPostProcessing.xml is found')
+           pass
                 
     def load_previous_exe_location(self, folder ='exe_file', file_name = 'exe.json', key='SBExe_folder'):
         try:

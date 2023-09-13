@@ -5,14 +5,11 @@ from PyQt5.QtWidgets import *
 
 from UI import icons
 
-
-
-
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(987, 862)
+        Form.resize(987, 848)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -55,7 +52,7 @@ class Ui_Form(object):
         self.settings.setObjectName(u"settings")
         self.settings.setMaximumSize(QSize(28, 28))
         icon = QIcon()
-        icon.addFile(u":/images/images/icon_settings.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/images/images/icons/icon_settings.png", QSize(), QIcon.Normal, QIcon.Off)
         self.settings.setIcon(icon)
 
         self.horizontalLayout.addWidget(self.settings)
@@ -64,7 +61,7 @@ class Ui_Form(object):
         self.min_button.setObjectName(u"min_button")
         self.min_button.setMaximumSize(QSize(28, 28))
         icon1 = QIcon()
-        icon1.addFile(u":/images/images/icon_minimize.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/images/images/icons/icon_minimize.png", QSize(), QIcon.Normal, QIcon.Off)
         self.min_button.setIcon(icon1)
 
         self.horizontalLayout.addWidget(self.min_button)
@@ -73,7 +70,7 @@ class Ui_Form(object):
         self.max_button.setObjectName(u"max_button")
         self.max_button.setMaximumSize(QSize(28, 28))
         icon2 = QIcon()
-        icon2.addFile(u":/images/images/icon_maximize.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/images/images/icons/icon_maximize.png", QSize(), QIcon.Normal, QIcon.Off)
         self.max_button.setIcon(icon2)
 
         self.horizontalLayout.addWidget(self.max_button)
@@ -82,7 +79,7 @@ class Ui_Form(object):
         self.close_button.setObjectName(u"close_button")
         self.close_button.setMaximumSize(QSize(28, 28))
         icon3 = QIcon()
-        icon3.addFile(u":/images/images/icon_close.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/images/images/icons/icon_close.png", QSize(), QIcon.Normal, QIcon.Off)
         self.close_button.setIcon(icon3)
 
         self.horizontalLayout.addWidget(self.close_button)
@@ -248,9 +245,8 @@ class Ui_Form(object):
         self.horizontalLayout_9.addWidget(self.groupBox)
 
         self.verticalLayout_4 = QVBoxLayout()
-        self.verticalLayout_4.setSpacing(9)
+        self.verticalLayout_4.setSpacing(0)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(-1, -1, -1, 9)
         self.groupBox_5 = QGroupBox(self.groupBox_6)
         self.groupBox_5.setObjectName(u"groupBox_5")
         self.verticalLayout_3 = QVBoxLayout(self.groupBox_5)
@@ -421,16 +417,16 @@ class Ui_Form(object):
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
         self.widget.setSizePolicy(sizePolicy4)
+        self.widget.setMinimumSize(QSize(16, 16))
         self.widget.setMaximumSize(QSize(16, 16))
-        self.widget.setStyleSheet(u"background-image: url(:/images/images/cil-size-grip.png);")
-
+        self.widget.setStyleSheet(u"background-image: url(:/images/images/icons/cil-size-grip.png);")
+        self.verticalLayout_4.setSpacing(11)
         self.horizontalLayout_7.addWidget(self.widget)
         QSizeGrip(self.widget)
 
         self.verticalLayout_9.addLayout(self.horizontalLayout_7)
+        self.verticalLayout_6.setSpacing(9)
 
-        self.settings.setToolTip('App settings')
-       
         self.retranslateUi(Form)
 
         QMetaObject.connectSlotsByName(Form)
@@ -468,11 +464,12 @@ class Ui_Form(object):
         self.DP_deleteModel.setText(QCoreApplication.translate("Form", u"Delete Model", None))
         self.DP_save_model.setText(QCoreApplication.translate("Form", u"Save", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("Form", u"Settings", None))
-        self.DP_SEBbatchLB.setText(QCoreApplication.translate("Form", u"SEBbatch setup file folder", None))
+        self.DP_SEBbatchLB.setText(QCoreApplication.translate("Form", u"SEBbatch setup file(.exe)", None))
         self.DP_SEBbatchBrowsePB.setText(QCoreApplication.translate("Form", u"Browse", None))
         self.DP_ConvertDataBtn.setText(QCoreApplication.translate("Form", u"Process Data", None))
-        self.label_2.setText(QCoreApplication.translate("Form", u"DAM-IOW-Data Post Processing-V1.00", None))
+        self.label_2.setText(QCoreApplication.translate("Form", u"DAM-IOW-Data Post Processing-V1.0.0", None))
     # retranslateUi
+
 
 
 

@@ -58,7 +58,7 @@ class Create_path_xml:
         return child_module
 
     def create_path_tagsB(self, root, child_module):
-        paths = ['sigleOrMultipleFile', 'setupFilePath', 'inputDirectory', 'inputFIles', 'outPutDir', 'nameAppend']
+        paths = ['sigleOrMultipleFile', 'setupFilePath', 'inputDirectory', 'inputFIles', 'outPutDir', 'nameAppend', 'outputFileName']
         pathtags = [root.createElement(i) for i in paths]
         [pathtag.appendChild(root.createTextNode('Nil'))for pathtag in pathtags]
         [child_module.appendChild(pathtags) for pathtags in pathtags]

@@ -5,8 +5,6 @@ from PyQt5 import QtCore
 from xml.dom import minidom 
 from UI.ui_module_a import Ui_widget
 from UI.ui_module_B import Ui_Form
-from PyQt5.QtGui import  QIcon
-from qt_material import apply_stylesheet, QtStyleTools, list_themes
 
 class DataPostProcessing:
     @staticmethod
@@ -56,8 +54,6 @@ class DataPostProcessing:
             file = InputFileName[0].split('/')[-1]
             InputFileNameLE.setText(file)
             
-
-
 
     
 class ModelWindow(QWidget):
@@ -131,7 +127,6 @@ class DataPostProcessingModels(DataPostProcessing):
         self.cellThermalMassWindow.show()
        
     def showDriveWindow(self, filePath, model_Name):
-        print('I am here in dive window')
         self.driveWindow =  Ui_Form() 
         self.driveWindow.groupBox.setTitle(model_Name)
         self.dataPostProcessingModuleIntiB(filePath, self.driveWindow, model_Name)
@@ -165,9 +160,7 @@ class DataPostProcessingModels(DataPostProcessing):
         self.dataPostProcessingModuleIntiB(filePath, self.WildEditwindow, model_Name)
         self.WildEditwindow.show()
 
-    def set_style_sheet(self, obj, theme):
-        extra = {'density_scale': '0',}
-        apply_stylesheet(obj, theme, invert_secondary=True, extra=extra)
+   
     
     def dataPostProcessingModuleIntiB(self, filePath, instanceObject, module_name):
         
@@ -183,7 +176,7 @@ class DataPostProcessingModels(DataPostProcessing):
         instanceObject.DP_NameAppendLE.textChanged.connect(lambda: self.savePathTagsA(module_name, filePath, parentObj = instanceObject, pathtag = 'nameAppend', value =instanceObject.DP_NameAppendLE.text()))
         #instanceObject.DP_SingleFileRB.clicked.connect(lambda: self.savePathTagsA(moduleName,filePath,  parentObj = None, pathtag = 'sigleOrMultipleFile', value ='single'))
         #instanceObject.DP_MultiFileRB.clicked.connect(lambda: self.savePathTagsA(moduleName, filePath,  parentObj = None, pathtag = 'sigleOrMultipleFile', value ='multi'))
-        
+        instanceObject.DP_OutputFileNameLE.textChanged.connect(lambda: self.savePathTagsA(module_name, filePath, parentObj = None, pathtag = 'outputFileName', value =instanceObject.DP_OutputFileNameLE.text()))
         instanceObject.DP_SingleFileRB.clicked.connect(lambda: self.singleFile(module_name, filePath , parentObj = instanceObject, pathtag = 'sigleOrMultipleFile', value ='single'))        
         instanceObject.DP_MultiFileRB.clicked.connect(lambda: self.multipleFile(module_name, filePath, parentObj = instanceObject, pathtag = 'sigleOrMultipleFile', value ='multi'))
         instanceObject.DP_OkayPB.clicked.connect(lambda: instanceObject.close())
@@ -244,16 +237,17 @@ class DataPostProcessingModels(DataPostProcessing):
                 elif value[0] == 'multi':
                     instanceObject.DP_MultiFileRB.setChecked(True)
                     instanceObject.DP_OutputFileNameLE.setDisabled(True)
-                    instanceObject.DP_NameAppendLE.setDisabled(True)
+                    #instanceObject.DP_NameAppendLE.setDisabled(True)
+                    instanceObject.DP_InputFileNameLE.setDisabled(True)
                 else:
                     instanceObject.DP_SingleFileRB.setChecked(False)
                     instanceObject.DP_MultiFileRB.setChecked(False)
         except FileNotFoundError:
-            print('DP_loadCookiesS : pathInfo.xml file is missing')
+           pass
         
 
     def DP_loadCookiesB(self, filePath, instanceObject, moduleName):
-        tagNameList = ['sigleOrMultipleFile', 'setupFilePath',  'inputDirectory', 'inputFIles', 'outPutDir', 'nameAppend']      
+        tagNameList = ['sigleOrMultipleFile', 'setupFilePath',  'inputDirectory', 'inputFIles', 'outPutDir', 'nameAppend', 'outputFileName']      
         try:
             with open(filePath, 'r', encoding="utf-8")as f:
                 domObj = minidom.parse(f)
@@ -265,17 +259,19 @@ class DataPostProcessingModels(DataPostProcessing):
                 instanceObject.DP_InputFileNameLE.setText(value[3])
                 instanceObject.DP_OutputDirLE.setText(value[4])
                 instanceObject.DP_NameAppendLE.setText(value[5])
+                instanceObject.DP_OutputFileNameLE.setText(value[6])
                 if value[0] == 'single':
                     instanceObject.DP_SingleFileRB.setChecked(True)
                 elif value[0] == 'multi':
                     instanceObject.DP_MultiFileRB.setChecked(True)
                     instanceObject.DP_OutputFileNameLE.setDisabled(True)
-                    instanceObject.DP_NameAppendLE.setDisabled(True)
+                    #instanceObject.DP_NameAppendLE.setDisabled(True)
+                    instanceObject.DP_InputFileNameLE.setDisabled(True)
                 else:
                     instanceObject.DP_SingleFileRB.setChecked(False)
                     instanceObject.DP_MultiFileRB.setChecked(False)
         except FileNotFoundError:
-            print('The pathInof.xml file is missing')
+            pass
     
 
 
@@ -292,18 +288,18 @@ class DataPostProcessingModels(DataPostProcessing):
                 domObj.writexml(f)
                 
         except FileNotFoundError:
-            print('There are no file named dataPostProcessing.xml is found')
+           pass
 
     def outputDataFormat(self, instanceObject):
         if instanceObject.DP_CNV_RB.isChecked():
              with open(instanceObject.DP_SetupFileLE.text(),'r') as f:
                 self.xmldoc = minidom.parse(f)        
                 self.Data = self.xmldoc.getElementsByTagName('Data_Conversion')[0]
-                print(len(self.Data))
+            
         elif instanceObject.DP_ROS_RB.isChecked():
-            print('ROS')
+            pass
         elif instanceObject.DP_CNVROS_RB.isChecked():
-            print('CNVROS')
+            pass
 
     
     def multipleFile(self, moduleName, filePath, parentObj,  pathtag, value):
@@ -351,7 +347,7 @@ class DataPostProcessingModels(DataPostProcessing):
                 elif value[0] == 'multi':
                     instanceObject.DP_MultiFileRB.setChecked(True)
                     instanceObject.DP_OutputFileNameLE.setDisabled(True)
-                    instanceObject.DP_NameAppendLE.setDisabled(True)
+                    instanceObject.DP_InputFileNameLE.setDisabled(True)
                 else:
                     instanceObject.DP_SingleFileRB.setChecked(False)
                     instanceObject.DP_MultiFileRB.setChecked(False)
@@ -361,7 +357,7 @@ class DataPostProcessingModels(DataPostProcessing):
                 else:
                     instanceObject.ros_file.setChecked(False)
         except FileNotFoundError:
-            print('DP_loadCookiesS : pathInfo.xml file is missing')
+            pass
 
     def savePathTags_Datcnvw(self, moduleName, filePath, parentObj,  pathtag, value):
         
@@ -377,7 +373,7 @@ class DataPostProcessingModels(DataPostProcessing):
                 domObj.writexml(f)
                 
         except FileNotFoundError:
-            print('There are no file named dataPostProcessing.xml is found')
+            pass
 
     def on_ok_pressed(self, ros_file, setup_file_path):
         try:
@@ -403,14 +399,3 @@ class DataPostProcessingModels(DataPostProcessing):
                 Hence, please make sure that *.bl, *.hex, *.hr are located in the same directory')
             alert.setIcon(QMessageBox.Warning)
             _ = alert.exec()
-
-
-
-
-'''if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = DataPostProcessingModels()
-    window.showDatcnvWindow()
-    window.showFilterWindow()
-    #window.show()
-    sys.exit(app.exec_())'''
